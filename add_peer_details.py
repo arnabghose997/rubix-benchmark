@@ -94,11 +94,22 @@ def add_peer_details_by_sender():
         serv = base_server + anchor
         grpc = base_grpc + anchor
 
-        did_id = did_config[str(serv)]
-        peer_id = cmd_get_peer_id(serv, grpc)
+        did_id = did_config[str(serv+1)]
+        peer_id = cmd_get_peer_id(serv+1, grpc+1)
 
         cmd_add_peer_details(peer_id, did_id, 4, serv, grpc)
 
+        #Add quorums
+        for x in range(5, 0, -1):
+            idx = anchor - x
+
+            q_serv = base_server + idx
+            q_grpc = base_grpc + idx
+
+            did_id = did_config[str(q_serv)]
+            peer_id = cmd_get_peer_id(q_serv+1, q_grpc+1)
+
+            cmd_add_peer_details(peer_id, did_id, 4, q_serv, q_grpc)
         anchor += 7
 
 add_peer_details_by_sender()

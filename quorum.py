@@ -115,8 +115,11 @@ def create_quorum_config():
     base_server, base_grpc = get_base_ports()
 
     # Add Quorum
-    for q in range(1, NODE_COUNT + 1):
-        cmd_add_quorum_dids(base_server + q, base_grpc + q)
+    nq_anchor = 6
+    for q in range(1, GROUP_COUNT + 1):
+        j = nq_anchor
+        for _ in range(j, j+2):
+            cmd_add_quorum_dids(base_server + j, base_grpc + j)
 
     # Setup Quorum
     anchor = 1
