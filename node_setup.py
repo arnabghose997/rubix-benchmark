@@ -110,10 +110,4 @@ def run_n_nodes(n_nodes):
         print("Running node " + str(i))
         cmd_run_rubix_servers("node" + str(i), i)
 
-
-    time.sleep(40)
-
-    s = get_list_of_non_runnable_nodes(n_nodes)
-    print(s)
-
-run_n_nodes(210)
+run_n_nodes(50)
