@@ -5,6 +5,10 @@ import requests
 import platform
 import re
 import json
+from concurrent.futures import ThreadPoolExecutor
+
+NODE_COUNT = 21
+GROUP_COUNT = int(NODE_COUNT / 7)
 
 def get_build_dir():
     os_name = platform.system()
@@ -53,58 +57,44 @@ def run_command(cmd_string, is_output_from_stderr=False):
         else:
             return output, code
 
-def cmd_create_did(server_port, grpc_port, did_type = 4):
-    os.chdir("./" + get_build_dir())
+def get_transfer_cmd_str(sender_address, receiver_address, rbt_amount, server_port, grpc_port):
+    return f"./rubixgoplatform transferrbt -senderAddr {sender_address} -receiverAddr {receiver_address} -rbtAmount {rbt_amount} -port {server_port} -grpcPort {grpc_port}"
 
-    cmd_string = f"./rubixgoplatform createdid -port {server_port} -grpcPort {grpc_port} -didType {did_type}"
-    if is_windows_os():
-        cmd_string = f".\\rubixgoplatform createdid -port {server_port} -grpcPort {grpc_port} -didType {did_type}"
+def cmd_rbt_transfer(cmd_string):
+    os.chdir("./" + get_build_dir())
     output, code = run_command(cmd_string, True)
     print(output)
-    
-    if code != 0:
-        raise Exception("Error occurred while run the command: " + cmd_string)
-    
-    did_id = ""
-    if "successfully" in output:
-        pattern = r'bafybmi\w+'
-        matches = re.findall(pattern, output)
-        if matches:
-            did_id = matches[0]
-        else:
-            raise Exception("unable to extract DID ID")
-
-    os.chdir("../")
-    return did_id
-
-def cmd_generate_rbt(did_id, numTokens, server_port, grpc_port):
-    os.chdir("./" + get_build_dir())
-    cmd_string = f"./rubixgoplatform generatetestrbt -did {did_id} -numTokens {numTokens} -port {server_port} -grpcPort {grpc_port}"
-    if is_windows_os():
-        cmd_string = f".\\rubixgoplatform generatetestrbt -did {did_id} -numTokens {numTokens} -port {server_port} -grpcPort {grpc_port}"
-    output, code = run_command(cmd_string, True)
-    
     if code != 0:
         raise Exception("Error occurred while run the command: " + cmd_string)
 
     os.chdir("../")
     return output
 
-def create_and_config_did():
-    base_serv_port, base_gprc_port = get_base_ports()
-    config_map = {}
+def intiate_transfer():
+    # Make a list of transfer commands 
+    commands = []
+    base_server, base_grpc = get_base_ports()
 
-    for i in range(1, 22):
-        serv_port = base_serv_port + i
-        grpc_port = base_gprc_port + i
+    f = open('didconf.json', 'r')
+    did_config = json.load(f)
 
-        did_res = cmd_create_did(serv_port, grpc_port)
-        config_map[str(serv_port)] = did_res
+    anchor = 6
+    for i in range(1, GROUP_COUNT + 1):
+        sender_serv = base_server + anchor
+        sender_grpc = base_grpc + anchor
 
-        cmd_generate_rbt(did_res, 3, serv_port, grpc_port)
+        receiver_serv = sender_serv + 1
+    
+        sender_did = did_config[str(sender_serv)]
+        receiver_did = did_config[str(receiver_serv)]
 
+        commands.append(get_transfer_cmd_str(sender_did, receiver_did, 1, sender_serv, sender_grpc))
 
-    with open("./didconf.json", 'w') as f:
-        json.dump(config_map, f, indent=4)
+        anchor += 7
 
-create_and_config_did()
+    with ThreadPoolExecutor() as executor:
+        # Use list comprehension to submit the command n times
+        print("TX 1")
+        executor.map(cmd_rbt_transfer, commands)
+
+intiate_transfer()

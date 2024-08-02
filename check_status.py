@@ -14,7 +14,7 @@ def get_base_ports():
 
 non_functional_nodes_port = []
 
-for i in range(1, 51):
+for i in range(1, 22):
     base_server, _ = get_base_ports()
     port = base_server + i
     url = f"http://localhost:{port}/api/getalldid"

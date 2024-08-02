@@ -110,4 +110,4 @@ def run_n_nodes(n_nodes):
         print("Running node " + str(i))
         cmd_run_rubix_servers("node" + str(i), i)
 
-run_n_nodes(50)
+run_n_nodes(21)
