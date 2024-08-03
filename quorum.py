@@ -100,37 +100,42 @@ def cmd_setup_quorum_dids(did, server_port, grpc_port):
 def create_quorum_config():
     f = open("didconf.json", 'r')
     did_config: dict = json.load(f)
-
-    quorumlistconfig = []
-    for port, did in did_config.items():
-        qlistconf = {
-            "type": 2,
-            "address": did
-        }
-        quorumlistconfig.append(qlistconf)
-    
-    with open("linux/quorumlist.json", "w") as f:
-        json.dump(quorumlistconfig, f)
-
     base_server, base_grpc = get_base_ports()
 
-    # Add Quorum
-    nq_anchor = 6
-    for q in range(1, GROUP_COUNT + 1):
-        j = nq_anchor
-        for _ in range(j, j+2):
-            cmd_add_quorum_dids(base_server + j, base_grpc + j)
+    # Create groupwise quorumlist
+    anchor = 1
+    for g in range(1, GROUP_COUNT + 1):
+        j = anchor
+        quorumlistconfig = []
+        quorum_file_name = "quorumlist_" + str(g) + ".json"
+        
+        nq_anchor = 0
+        for q in range(j, j+5):
+            qlistconf = {
+                "type": 2,
+                "address": did_config[str(base_server + q)]
+            }
+            quorumlistconfig.append(qlistconf)
+            cmd_setup_quorum_dids(did_config[str(base_server + q)], base_server + q, base_grpc + q)
+            
+        nq_anchor = anchor + 5
+        anchor += 7 
+
+        with open("linux/" + quorum_file_name, "w") as f:
+            json.dump(quorumlistconfig, f)
+
+        k = nq_anchor
+        for s in range(k, k+2):
+            cmd_add_quorum_dids(base_server + s, base_grpc + s, quorum_file_name)
+
 
     # Setup Quorum
-    anchor = 1
-    for i in range(1, GROUP_COUNT + 1):
-        j = anchor
-        for q in range(j, j + 5):
-            cmd_setup_quorum_dids(did_config[str(base_server + q)], base_server + q, base_grpc + q)
-        anchor += 7
-
-    # Fund RBT
-    
+    # anchor = 1
+    # for i in range(1, GROUP_COUNT + 1):
+    #     j = anchor
+    #     for q in range(j, j + 5):
+    #         cmd_setup_quorum_dids(did_config[str(base_server + q)], base_server + q, base_grpc + q)
+    #     anchor += 7
 
 
 create_quorum_config()

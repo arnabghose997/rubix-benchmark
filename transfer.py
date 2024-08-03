@@ -5,7 +5,7 @@ import requests
 import platform
 import re
 import json
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 NODE_COUNT = 21
 GROUP_COUNT = int(NODE_COUNT / 7)
@@ -62,13 +62,16 @@ def get_transfer_cmd_str(sender_address, receiver_address, rbt_amount, server_po
 
 def cmd_rbt_transfer(cmd_string):
     os.chdir("./" + get_build_dir())
+    start_time = time.time()
     output, code = run_command(cmd_string, True)
     print(output)
     if code != 0:
         raise Exception("Error occurred while run the command: " + cmd_string)
 
+    end_time = time.time()
+    duration = end_time - start_time
     os.chdir("../")
-    return output
+    return output, duration
 
 def intiate_transfer():
     # Make a list of transfer commands 
@@ -92,9 +95,12 @@ def intiate_transfer():
 
         anchor += 7
 
-    with ThreadPoolExecutor() as executor:
+    with ProcessPoolExecutor() as executor:
         # Use list comprehension to submit the command n times
-        print("TX 1")
-        executor.map(cmd_rbt_transfer, commands)
+        futures = [executor.submit(cmd_rbt_transfer, command) for command in commands]
+
+    for f in futures:
+        output, duration = f.result()
+        print(f"Output '{output}' took {duration:.2f} seconds") 
 
 intiate_transfer()

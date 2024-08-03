@@ -107,9 +107,9 @@ def add_peer_details_by_sender():
             q_grpc = base_grpc + idx
 
             did_id = did_config[str(q_serv)]
-            peer_id = cmd_get_peer_id(q_serv+1, q_grpc+1)
+            peer_id = cmd_get_peer_id(q_serv, q_grpc)
 
-            cmd_add_peer_details(peer_id, did_id, 4, q_serv, q_grpc)
+            cmd_add_peer_details(peer_id, did_id, 4, serv, grpc)
         anchor += 7
 
 add_peer_details_by_sender()
