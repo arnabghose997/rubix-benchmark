@@ -6,11 +6,11 @@ import tarfile
 import stat
 
 def download_rubix_binary_tmp():
-    if os.path.exists("linux"):
+    if os.path.exists("linux/rubixgoplatform"):
         return
     
-    os.makedirs("linux")
-    shutil.copy("/home/block-47/rubixgoplatform/linux/rubixgoplatform", "/home/block-47/rubix-benchmark/single-serv/linux/")
+    os.makedirs("linux", exist_ok=True)
+    shutil.copy("/mnt/d/PATCH/rubixgoplatform/linux/rubixgoplatform", "/mnt/d/benchmarking/lab/single-serv/linux/")
 
 def download_rubix_binary():
     # Path where you want to save the extracted file

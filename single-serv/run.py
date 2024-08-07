@@ -1,5 +1,7 @@
 import sys
 import time
+import resource
+
 '''
 Args:
     1 (int): to install prereq
@@ -12,12 +14,12 @@ from tools.quorum import create_quorum_config
 from tools.transfer import intiate_transfer
 from tools.peer_details import add_peer_details_by_sender
 
-TARGET_TRANSACTIONS = 100
+TARGET_TRANSACTIONS = 10
 
 QUORUM_DIDS = 7
 NON_QUORUM_DID_PER_CLUSTER = 2 * TARGET_TRANSACTIONS
 
-CLUSTERS = 2
+CLUSTERS = 1
 CLUSTER_START_NODE_IDX = 9
 
 TOTAL_DID_PER_CLUSTER = QUORUM_DIDS + int(NON_QUORUM_DID_PER_CLUSTER / CLUSTERS)
@@ -117,4 +119,3 @@ if __name__=='__main__':
     # Initiate Transfer
     print("Start Transactions")
     intiate_transfer(did_config_list, CLUSTERS, CLUSTER_START_NODE_IDX, NON_QUORUM_DID_PER_CLUSTER)
-

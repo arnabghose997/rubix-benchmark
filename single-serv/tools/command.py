@@ -131,12 +131,12 @@ def get_transfer_cmd_str(sender_address, receiver_address, rbt_amount, server_po
     return f"./rubixgoplatform transferrbt -senderAddr {sender_address} -receiverAddr {receiver_address} -rbtAmount {rbt_amount} -port {server_port} -grpcPort {grpc_port}"
 
 def cmd_rbt_transfer(cmd_string):
-    os.chdir("./" + get_build_dir())
+    s = os.getcwd()
+    if s != "/mnt/d/benchmarking/lab/single-serv/linux":
+        os.chdir("/mnt/d/benchmarking/lab/single-serv/linux")
 
     output, code = run_command(cmd_string, True)
-    print(output)
 
-    os.chdir("../")
     return output
 
 def cmd_generate_rbt(did_id, numTokens, server_port, grpc_port):

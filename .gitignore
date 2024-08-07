@@ -1,2 +1,4 @@
 didconf.json
 linux/
+__pycache__
+reqs.json
